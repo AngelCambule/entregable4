@@ -1,15 +1,19 @@
 const socketClient = io();
 
-socketClient.emit("message", "Mensaje desde el formulario");
+socketClient.emit("message", "Mensaje desde el cliente");
 
 const button = document.querySelector("#button");
 
-socketClient.on("users_list", (data) => {
+socketClient.on("server_message", (data) => {
+  console.log(data);
+})
+
+socketClient.on("shop_list", (data) => {
   console.log(data);
   
   const div = document.querySelector(".cartList");
 
-  div.innerHTML = `${data.map((product) => `${product.name} - ${product.qty} <button id="menos${product.name}">-</button><br/>`)}`;
+  div.innerHTML = `${data.map((product) => `${product.name} - ${product.qty} <button id="menos">-</button><br/>`)}`;
   
 });
 
@@ -26,5 +30,5 @@ button.addEventListener("click", (e) => {
     qty: parseInt(qty.value)
   };
 
-  socketClient.emit("form_message", product);
+  socketClient.emit("shop_message", product);
 });

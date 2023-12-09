@@ -24,11 +24,9 @@ app.set('views', `${__dirname}/views`)
 app.use("/", viewRouter);
 app.use(express.static(`${__dirname}/public`))
 
-const users = [];
+const cart = [];
 
 socketServer.on("connection", (socketClient) => {
-    
-    console.log("Nuevo cliente conectado");
 
     socketClient.on("message", (data) => {
       console.log(data);
@@ -36,28 +34,22 @@ socketServer.on("connection", (socketClient) => {
   
     socketClient.emit("server_message", "Mensaje desde el servidor");
   
-    // Mensaje para todos, menos para el que hace la conexion
-    socketClient.broadcast.emit("message_all", `${socketClient.id} Conectado`);
-  
-    // Mensaje para todos
-    socketServer.emit("message_all_2", "Mensaje a todos");
-  
-    // Mensajes del form
-    socketClient.on("form_message", (data) => {
+    socketClient.on("shop_message", (data) => {
       console.log(data);
-      const asd = users.find((u) => u.name === data.name)
+      const asd = cart.find((u) => u.name === data.name)
       if (!asd){
-        users.push(data);
-      
+        cart.push(data);
+        console.log(`Se agrego ${data.name}`);
       }else{
         asd.qty = asd.qty + data.qty
+        console.log(`Se agrego ${data.qty} unidad/es mas a ${data.name}`);
       }
       
-      socketClient.emit("users_list", users);
+      socketClient.emit("shop_list", cart);
     });
     
   
-    socketClient.emit("users_list", users);
+    socketClient.emit("shop_list", cart);
     
   });
   
