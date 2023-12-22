@@ -1,0 +1,12 @@
+
+.productsList {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+.productsList .asd {
+    display: flex;
+}
+.productsList p {
+    margin: 0px 10px;
+}

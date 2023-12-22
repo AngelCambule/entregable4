@@ -2,11 +2,15 @@ import express from 'express'
 import handlebars from 'express-handlebars'
 import __dirname from './utils.js'
 import viewRouter from "./routes/views.routes.js";
-
-import { Server } from 'socket.io'
+import { password, PORT, db_name } from './env.js'
+import productRouter from './routes/products.routes.js'
+import ProductDao from './daos/ProductDBManager.dao.js'
+import CartDao from './daos/CartDBManager.dao.js';
+import mongoose from 'mongoose';
+import { Server } from 'socket.io';
 
 const app = express()
-const PORT = 5500
+
 const httpServer = app.listen(PORT, () => console.log(`Servidor iniciado en el puerto ${PORT}`))
 
 const socketServer = new Server(httpServer)
@@ -14,42 +18,58 @@ const socketServer = new Server(httpServer)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.engine('hbs', handlebars.engine({
-    extname: 'hbs',
-    defaultLayout: 'main'
-}))
+mongoose.connect(
+  `mongodb+srv://jkzcs:${password}@cluster0.xnombsi.mongodb.net/${db_name}?retryWrites=true&w=majority`
+)
+.then(() => {
+  console.log('DB Connected');
+})
+.catch((err) => {
+  console.log(err);
+})
 
 app.set('view engine', 'hbs')
 app.set('views', `${__dirname}/views`)
 app.use("/", viewRouter);
 app.use(express.static(`${__dirname}/public`))
+app.use('/api/products', productRouter)
 
-const cart = [];
+app.engine('hbs', handlebars.engine({
+    extname: 'hbs',
+    defaultLayout: 'main'
+}))
 
-socketServer.on("connection", (socketClient) => {
 
-    socketClient.on("message", (data) => {
-      console.log(data);
-    });
-  
-    socketClient.emit("server_message", "Mensaje desde el servidor");
-  
-    socketClient.on("shop_message", (data) => {
-      console.log(data);
-      const asd = cart.find((u) => u.name === data.name)
-      if (!asd){
-        cart.push(data);
-        console.log(`Se agrego ${data.name}`);
-      }else{
-        asd.qty = asd.qty + data.qty
-        console.log(`Se agrego ${data.qty} unidad/es mas a ${data.name}`);
-      }
-      
-      socketClient.emit("shop_list", cart);
-    });
+socketServer.on('connection', (socketClient) => {
+  socketClient.on('messagertp', async (data) => {
+    console.log(data);
+    try {
+      const arrayp = await ProductDao.getProducts()
+    socketClient.emit('btns', arrayp)
+    socketClient.emit('cart', await CartDao.getCart())
+
+    } catch (err) {
+      console.log(err);
+    }
     
-  
-    socketClient.emit("shop_list", cart);
+  })
+  socketClient.on('newcart', async (data) => {
     
-  });
+    try {
+      console.log('Se agrego ' + data);
+      await CartDao.addToCart(data)
+      socketClient.emit('cart', await CartDao.getCart())
+    } catch (err){
+      console.log(err);
+    }
+  })
+  socketClient.on('elimcart', async (id) => {
+    try {
+      const newCart = await CartDao.deleteToCart(id)
+      socketClient.emit('cart', newCart)
+    }catch (err){
+      console.log(err);
+    }
+  })
   
+})
