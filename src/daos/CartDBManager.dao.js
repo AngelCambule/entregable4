@@ -10,11 +10,11 @@ class CartDao {
             const currentCart = await cartModel.find({id: data.id})
             
             if (currentCart[0]){
-                const qtycurrent = currentCart[0].qty + 1
-                currentCart[0].qty = qtycurrent 
-                let addedProduct = currentCart[0]
-                return await cartModel.updateOne({id: currentCart[0].id},addedProduct)
+                currentCart[0].qty += 1
+                console.log('Se sumo una unidad de ' + data.nombre);
+                return await cartModel.updateOne({id: currentCart[0].id}, currentCart[0])
             }else{
+                console.log('Se agrego al carrito ' + data.nombre);
                 return await cartModel.create(data)
             }
         } catch (err) {
@@ -28,6 +28,22 @@ class CartDao {
             await cartModel.deleteOne({id: id})
             return cartModel.find()
         }catch (err){
+            console.log(err);
+        }
+    }
+    async deleteQty(data){
+        try {
+            console.log(data);
+            if(data.qty > 1){
+                data.qty -= 1
+                console.log('Se resto una unidad de ' + data.nombre);
+                await cartModel.updateOne({id: data.id}, data)
+                return await cartModel.find()
+            }else{
+                console.log('Se elimino del carrito ' + data.nombre);
+                return await this.deleteToCart(data.id)
+            }
+        } catch (err) {
             console.log(err);
         }
     }

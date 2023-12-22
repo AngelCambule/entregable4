@@ -56,13 +56,26 @@ socketServer.on('connection', (socketClient) => {
   socketClient.on('newcart', async (data) => {
     
     try {
-      console.log('Se agrego ' + data);
       await CartDao.addToCart(data)
       socketClient.emit('cart', await CartDao.getCart())
     } catch (err){
       console.log(err);
     }
   })
+
+  //qtymenos
+  
+  socketClient.on('qtycartmenos', async (data) => {
+    try {
+      const newCart = await CartDao.deleteQty(data)
+      socketClient.emit('cart', newCart)
+    }catch (err){
+      console.log(err);
+    }
+  })
+
+  //eliminar
+
   socketClient.on('elimcart', async (id) => {
     try {
       const newCart = await CartDao.deleteToCart(id)

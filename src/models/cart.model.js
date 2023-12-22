@@ -3,7 +3,7 @@ import { Schema, model } from 'mongoose'
 const cartSchema = new Schema({
     id: Number,
     nombre: String,
-    precio: String,
+    precio: Number,
     qty: Number,
 
 },{
