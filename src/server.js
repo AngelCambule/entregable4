@@ -41,6 +41,9 @@ app.engine('hbs', handlebars.engine({
 
 
 socketServer.on('connection', (socketClient) => {
+
+  //carga de la pagina
+
   socketClient.on('messagertp', async (data) => {
     console.log(data);
     try {
@@ -52,6 +55,8 @@ socketServer.on('connection', (socketClient) => {
       console.log(err);
     }
     
+    //agregar producto
+
   })
   socketClient.on('newcart', async (data) => {
     
@@ -63,7 +68,7 @@ socketServer.on('connection', (socketClient) => {
     }
   })
 
-  //qtymenos
+  //eliminarqty
   
   socketClient.on('qtycartmenos', async (data) => {
     try {
@@ -74,7 +79,7 @@ socketServer.on('connection', (socketClient) => {
     }
   })
 
-  //eliminar
+  //eliminarproducto
 
   socketClient.on('elimcart', async (id) => {
     try {
